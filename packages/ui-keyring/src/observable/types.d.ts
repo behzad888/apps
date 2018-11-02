@@ -2,7 +2,7 @@
 // This software may be modified and distributed under the terms
 // of the ISC license. See the LICENSE file for details.
 
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { KeyringSectionOption } from '../options/types';
 import { KeyringJson } from '../types';
 
@@ -31,3 +31,7 @@ export type AddressSubject = {
   remove: (address: string) => void,
   subject: BehaviorSubject<SubjectInfo>
 };
+
+export interface KeyringObservableStruct {
+  readonly all: Observable<any>
+}
