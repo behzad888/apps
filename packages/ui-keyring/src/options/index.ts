@@ -8,7 +8,7 @@ import { KeyringOptions, KeyringOptionInstance, KeyringSectionOption, KeyringSec
 
 import { BehaviorSubject } from 'rxjs';
 
-import observableAll from '../observable';
+import keyringObservable from '../observable';
 
 let hasCalledInitOptions = false;
 
@@ -30,7 +30,7 @@ class KeyringOption implements KeyringOptionInstance {
       throw new Error('Unable to initialise options more than once');
     }
 
-    observableAll.subscribe((value) => {
+    keyringObservable.all.subscribe((value) => {
       const options = this.emptyOptions();
 
       this.addAccounts(keyring, options);
