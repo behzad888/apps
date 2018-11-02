@@ -12,37 +12,42 @@ import { map } from 'rxjs/operators';
 import createOptionItem from '../options/item';
 import { accountKey, addressKey } from '../defaults';
 
-// TODO - try moving `subject` back into KeyringObservable and check i'm using subject correct in it
-const subject = new BehaviorSubject(false);
+class KeyringObservable implements KeyringObservableInstance {
+  private _accounts: AccountSubject;
+  private _addresses: AddressSubject;
+  private _all: Observable<any>;
+  private _isDevelopment: boolean;
+  private _subject: BehaviorSubject<boolean>;
 
-// class KeyringObservable implements KeyringObservableInstance {
-
-class KeyringObservable {
-  static all (): Observable<any> {
-    return combineLatest(
-      KeyringObservable.accounts().subject,
-      KeyringObservable.addresses().subject
-    ).pipe(
-      map(([accounts, addresses]) => ({
-        accounts,
-        addresses
-      }))
-    );
+  constructor () {
+    this._subject = new BehaviorSubject(false);
+    this._isDevelopment = this._subject.getValue();
+    this._accounts = this.genericSubject(accountKey, true);
+    this._addresses = this.genericSubject(addressKey);
+    this._all = this.observableAll();
   }
 
-  static accounts (): AccountSubject {
-    return KeyringObservable.genericSubject(accountKey, true);
+  get accounts (): AccountSubject {
+    return this._accounts;
   }
 
-  static addresses (): AddressSubject {
-    return KeyringObservable.genericSubject(addressKey);
+  get addresses (): AddressSubject {
+    return this._addresses;
   }
 
-  static genericSubject (keyCreator: (address: string) => string, withTest: boolean = false): AddressSubject {
+  get all (): Observable<any> {
+    return this._all;
+  }
+
+  get isDevelopment (): boolean {
+    return this._isDevelopment;
+  }
+
+  private genericSubject (keyCreator: (address: string) => string, withTest: boolean = false): AddressSubject {
     let current: SubjectInfo = {};
     const subject = new BehaviorSubject({});
     const next = (): void => {
-      const isDevMode = KeyringObservable.isDevelopment();
+      const isDevMode = this.isDevelopment;
 
       subject.next(
         Object
@@ -87,17 +92,23 @@ class KeyringObservable {
     };
   }
 
-  static isDevelopment (): boolean {
-    return subject.getValue();
+  observableAll (): Observable<any> {
+    return combineLatest(
+      this.accounts.subject,
+      this.addresses.subject
+    ).pipe(
+      map(([accounts, addresses]) => ({
+        accounts,
+        addresses
+      }))
+    );
   }
 
-  static set (isDevelopment: boolean): void {
-    subject.next(isDevelopment);
+  setDevMode (isDevelopment: boolean): void {
+    this._subject = this._subject.next(isDevelopment);
   }
 }
 
-// const keyringObservableInstance = new KeyringObservable();
+const keyringObservableInstance = new KeyringObservable();
 
-// export default keyringObservableInstance;
-
-export default KeyringObservable;
+export default keyringObservableInstance;
